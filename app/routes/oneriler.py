@@ -1,9 +1,10 @@
-from flask import Blueprint, request, render_template, jsonify, send_file
+from flask import Blueprint, request, render_template, jsonify, send_file, current_app
 from app.utils.fetch_reviews import fetch_reviews
 from openai import OpenAI
 import tempfile
 import os
 from dotenv import load_dotenv
+import traceback
 
 load_dotenv()
 
@@ -50,18 +51,29 @@ def oneriler():
 
 @oneriler_bp.route("/generate_summary")
 def generate_summary_api():
-    months = request.args.get("months", "1")
-    app = request.args.get("app", "biletinial")
-    cache_key = f"{app}_{months}"
+    try:
+        months = request.args.get("months", "1")
+        app = request.args.get("app", "biletinial")
+        cache_key = f"{app}_{months}"
 
-    if cache_key in summary_cache:
-        return summary_cache[cache_key]
+        if cache_key in summary_cache:
+            return summary_cache[cache_key]
 
-    yorumlar = fetch_reviews(months, app)
-    metinler = [y["comment"] for y in yorumlar if len(y["comment"]) > 20]
-    summary = generate_summary_chunked(metinler)
-    summary_cache[cache_key] = summary
-    return summary
+        yorumlar = fetch_reviews(months, app)
+        if not yorumlar:
+            return "Bu dönem için yorum bulunamadı.", 404
+
+        metinler = [y["comment"] for y in yorumlar if len(y["comment"]) > 20]
+        if not metinler:
+            return "Analiz edilebilecek uzunlukta yorum bulunamadı.", 404
+
+        summary = generate_summary_chunked(metinler)
+        summary_cache[cache_key] = summary
+        return summary
+
+    except Exception as e:
+        current_app.logger.error(f"Error in generate_summary_api: {str(e)}\n{traceback.format_exc()}")
+        return "Analiz yapılırken bir hata oluştu. Lütfen tekrar deneyin.", 500
 
 
 @oneriler_bp.route("/download_txt")

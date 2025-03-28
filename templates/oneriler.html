@@ -269,16 +269,22 @@
       const month = document.getElementById("onerilerSelect").value;
       const content = document.getElementById("summaryContent");
       const link = document.getElementById("downloadLink");
+      const currentApp = localStorage.getItem('currentApp') || 'biletinial';
+
       content.textContent = "Analiz yapılıyor, lütfen bekleyin...";
       link.style.display = "none";
 
       try {
         const res = await fetch(`/generate_summary?months=${month}&app=${currentApp}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const text = await res.text();
         content.textContent = text;
         link.href = `/download_txt?months=${month}&app=${currentApp}`;
         link.style.display = "inline";
-      } catch {
+      } catch (error) {
+        console.error('Error generating summary:', error);
         content.textContent = "Bir hata oluştu. Lütfen tekrar deneyin.";
       }
     }
