@@ -308,12 +308,16 @@
       const months = document.getElementById("raporSelect").value;
       const status = document.getElementById("raporStatus");
       const ratingEl = document.getElementById("avgRating");
+      const currentApp = localStorage.getItem('currentApp') || 'biletinial';
 
       status.textContent = "Rapor hazırlanıyor, lütfen bekleyin...";
       ratingEl.textContent = "-";
 
       try {
         const res = await fetch(`/get_reviews?months=${months}&app=${currentApp}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
 
         let pos = 0, neg = 0, totalRating = 0;
@@ -329,8 +333,10 @@
         status.textContent = `Toplam ${data.length} yorum analiz edildi.`;
 
         renderChart(pos, neg);
-      } catch {
-        status.textContent = "Rapor alınırken bir hata oluştu.";
+      } catch (error) {
+        console.error('Error fetching report:', error);
+        status.textContent = "Rapor alınırken bir hata oluştu. Lütfen tekrar deneyin.";
+        ratingEl.textContent = "-";
       }
     }
 

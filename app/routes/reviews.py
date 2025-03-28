@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify, render_template, send_file
+from flask import Blueprint, request, jsonify, render_template, send_file, current_app
 from app.utils.fetch_reviews import fetch_reviews
 import pandas as pd
 from io import BytesIO
+import traceback
 
 reviews_bp = Blueprint("reviews", __name__)
 
@@ -11,10 +12,14 @@ def index():
 
 @reviews_bp.route("/get_reviews")
 def get_reviews():
-    months = request.args.get("months", "1")
-    app = request.args.get("app", "biletinial")
-    data = fetch_reviews(months, app)
-    return jsonify(data)
+    try:
+        months = request.args.get("months", "1")
+        app = request.args.get("app", "biletinial")
+        data = fetch_reviews(months, app)
+        return jsonify(data)
+    except Exception as e:
+        current_app.logger.error(f"Error in get_reviews: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": "Yorumlar alınırken bir hata oluştu. Lütfen tekrar deneyin."}), 500
 
 @reviews_bp.route("/download_reviews")
 def download_reviews():
