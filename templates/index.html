@@ -366,6 +366,33 @@
 
       XLSX.writeFile(workbook, `${currentApp}_yorumlar.xlsx`);
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggle = document.getElementById('appToggle');
+      const currentApp = new URLSearchParams(window.location.search).get('app') || 'biletinial';
+      
+      // Set initial state
+      toggle.checked = currentApp === 'thinksuite';
+      document.body.classList.toggle('thinksuite-mode', currentApp === 'thinksuite');
+      
+      // Load saved state from localStorage
+      const savedApp = localStorage.getItem('currentApp');
+      if (savedApp) {
+        toggle.checked = savedApp === 'thinksuite';
+        document.body.classList.toggle('thinksuite-mode', savedApp === 'thinksuite');
+      }
+
+      toggle.addEventListener('change', function() {
+        const isThinkSuite = this.checked;
+        document.body.classList.toggle('thinksuite-mode', isThinkSuite);
+        localStorage.setItem('currentApp', isThinkSuite ? 'thinksuite' : 'biletinial');
+        
+        // Reload comments with new app parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set('app', isThinkSuite ? 'thinksuite' : 'biletinial');
+        window.location.href = url.toString();
+      });
+    });
   </script>
 </body>
 </html>

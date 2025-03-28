@@ -238,37 +238,32 @@
   </div>
 
   <script>
-    let currentApp = localStorage.getItem('currentApp') || 'biletinial';
-
-    function toggleApp() {
+    document.addEventListener('DOMContentLoaded', function() {
       const toggle = document.getElementById('appToggle');
-      const biletinialLabel = document.getElementById('biletinialLabel');
-      const thinksuiteLabel = document.getElementById('thinksuiteLabel');
+      const currentApp = new URLSearchParams(window.location.search).get('app') || 'biletinial';
       
-      currentApp = toggle.checked ? 'thinksuite' : 'biletinial';
-      localStorage.setItem('currentApp', currentApp);
+      // Set initial state
+      toggle.checked = currentApp === 'thinksuite';
+      document.body.classList.toggle('thinksuite-mode', currentApp === 'thinksuite');
       
-      if (toggle.checked) {
-        biletinialLabel.classList.remove('active');
-        thinksuiteLabel.classList.add('active');
-        document.body.classList.add('thinksuite-mode');
-      } else {
-        biletinialLabel.classList.add('active');
-        thinksuiteLabel.classList.remove('active');
-        document.body.classList.remove('thinksuite-mode');
+      // Load saved state from localStorage
+      const savedApp = localStorage.getItem('currentApp');
+      if (savedApp) {
+        toggle.checked = savedApp === 'thinksuite';
+        document.body.classList.toggle('thinksuite-mode', savedApp === 'thinksuite');
       }
-    }
 
-    // Sayfa yüklendiğinde modu ayarla
-    window.onload = function() {
-      const toggle = document.getElementById('appToggle');
-      if (currentApp === 'thinksuite') {
-        toggle.checked = true;
-        document.getElementById('biletinialLabel').classList.remove('active');
-        document.getElementById('thinksuiteLabel').classList.add('active');
-        document.body.classList.add('thinksuite-mode');
-      }
-    };
+      toggle.addEventListener('change', function() {
+        const isThinkSuite = this.checked;
+        document.body.classList.toggle('thinksuite-mode', isThinkSuite);
+        localStorage.setItem('currentApp', isThinkSuite ? 'thinksuite' : 'biletinial');
+        
+        // Reload data with new app parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set('app', isThinkSuite ? 'thinksuite' : 'biletinial');
+        window.location.href = url.toString();
+      });
+    });
 
     async function getSummary() {
       const month = document.getElementById("onerilerSelect").value;

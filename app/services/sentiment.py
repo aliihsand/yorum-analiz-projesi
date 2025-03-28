@@ -13,7 +13,7 @@ NEGATIVE_HINTS = [
     "rezalet", "şikayet", "berbat", "kötü", "eksik", "tekrar yükledim",
     "memnun değilim", "kapanıyor", "gereksiz", "işe yaramıyor","eror",
     "error","hatalı","yanlış","yanlis","çöktü","çöker","çöküyor","çözüm","gerekir",
-    "hata veriyor","hata alıyorum"
+    "hata veriyor","hata alıyorum","başarisız","gelistirilmeli","Geliştirilmeli","Kabut edilmiyor","Geliştirin" 
 ]
 
 def analyze_sentiment(text):
