@@ -1,0 +1,10 @@
+Flask
+Flask-CORS
+python-dotenv
+google-play-scraper
+textblob
+transformers 
+torch 
+openpyxl
+pandas
+openai

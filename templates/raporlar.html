@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Yorum Raporları</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+
+    nav {
+      background-color: #ffd700;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: #1a1a1a;
+      text-decoration: none;
+      font-weight: 500;
+      margin-right: 2rem;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #1a237e;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 6rem auto 2rem;
+      padding: 0 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #1a1a1a;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .controls {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+
+    select, button {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-right: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+    }
+
+    .rapor-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .box {
+      flex: 1;
+      padding: 2rem;
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .box h3 {
+      color: #1a1a1a;
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    #avgRating {
+      font-size: 3rem;
+      color: #1a237e;
+      margin: 1rem 0;
+      font-weight: 700;
+    }
+
+    canvas {
+      margin: auto;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .app-toggle {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-left: auto;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #e0e0e0;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    input:checked + .slider {
+      background-color: #1a237e;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .app-label {
+      font-size: 14px;
+      color: #1a1a1a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+
+    .app-label.active {
+      color: #1a237e;
+      transform: scale(1.2);
+    }
+
+    /* ThinkSuite Mode Styles */
+    body.thinksuite-mode nav {
+      background-color: #1a237e;
+    }
+
+    body.thinksuite-mode nav a {
+      color: white;
+    }
+
+    body.thinksuite-mode .app-label {
+      color: white;
+    }
+
+    body.thinksuite-mode .app-label.active {
+      color: white;
+      font-weight: 800;
+      transform: scale(1.2);
+    }
+
+    body.thinksuite-mode #avgRating {
+      color: #1a1a1a;
+    }
+
+    body.thinksuite-mode .box {
+      background: white;
+    }
+
+    body.thinksuite-mode .box h3 {
+      color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Yorum Analiz</a>
+    <a href="/raporlar">Raporlar</a>
+    <a href="/oneriler">Müşteri Öneri/Şikayetleri</a>
+    <div class="app-toggle">
+      <span class="app-label active" id="biletinialLabel">BiletiniAL</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="appToggle" onchange="toggleApp()">
+        <span class="slider"></span>
+      </label>
+      <span class="app-label" id="thinksuiteLabel">ThinkSuite</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Yorum Raporları</h1>
+
+    <div class="controls">
+      <label for="raporSelect">Filtrele:</label>
+      <select id="raporSelect"></select>
+      <button onclick="getRapor()">Raporu Getir</button>
+    </div>
+
+    <p id="raporStatus" style="text-align:center; font-style: italic; margin-top:10px;"></p>
+
+    <div class="rapor-container">
+      <div class="box">
+        <h3>Genel Yorum Dağılımı</h3>
+        <canvas id="chartCanvas" width="200" height="200"></canvas>
+        <p>
+          <span style="color:red;">🔴 = Öneri ve Şikayetler</span><br>
+          <span style="color:green;">🟢 = Kullanıcı Memnuniyet Bildirimleri</span>
+        </p>
+      </div>
+      <div class="box">
+        <h3>Yıldız Ortalaması</h3>
+        <h1 id="avgRating">-</h1>
+        <p>Bu dönem için ortalama puan</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentApp = localStorage.getItem('currentApp') || 'biletinial';
+
+    function toggleApp() {
+      const toggle = document.getElementById('appToggle');
+      const biletinialLabel = document.getElementById('biletinialLabel');
+      const thinksuiteLabel = document.getElementById('thinksuiteLabel');
+      
+      currentApp = toggle.checked ? 'thinksuite' : 'biletinial';
+      localStorage.setItem('currentApp', currentApp);
+      
+      if (toggle.checked) {
+        biletinialLabel.classList.remove('active');
+        thinksuiteLabel.classList.add('active');
+        document.body.classList.add('thinksuite-mode');
+      } else {
+        biletinialLabel.classList.add('active');
+        thinksuiteLabel.classList.remove('active');
+        document.body.classList.remove('thinksuite-mode');
+      }
+    }
+
+    window.onload = function () {
+      const select = document.getElementById("raporSelect");
+      for (let i = 1; i <= 24; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `Son ${i} Ay`;
+        select.appendChild(option);
+      }
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "Tüm Yorumlar";
+      select.appendChild(allOption);
+
+      // Sayfa yüklendiğinde modu ayarla
+      const toggle = document.getElementById('appToggle');
+      if (currentApp === 'thinksuite') {
+        toggle.checked = true;
+        document.getElementById('biletinialLabel').classList.remove('active');
+        document.getElementById('thinksuiteLabel').classList.add('active');
+        document.body.classList.add('thinksuite-mode');
+      }
+    };
+
+    async function getRapor() {
+      const months = document.getElementById("raporSelect").value;
+      const status = document.getElementById("raporStatus");
+      const ratingEl = document.getElementById("avgRating");
+
+      status.textContent = "Rapor hazırlanıyor, lütfen bekleyin...";
+      ratingEl.textContent = "-";
+
+      try {
+        const res = await fetch(`/get_reviews?months=${months}&app=${currentApp}`);
+        const data = await res.json();
+
+        let pos = 0, neg = 0, totalRating = 0;
+
+        data.forEach(r => {
+          if (r.sentiment === 'positive') pos++;
+          else neg++;
+          totalRating += r.rating;
+        });
+
+        const avg = data.length ? (totalRating / data.length).toFixed(2) : '-';
+        ratingEl.textContent = avg;
+        status.textContent = `Toplam ${data.length} yorum analiz edildi.`;
+
+        renderChart(pos, neg);
+      } catch {
+        status.textContent = "Rapor alınırken bir hata oluştu.";
+      }
+    }
+
+    function renderChart(pos, neg) {
+      const ctx = document.getElementById('chartCanvas').getContext('2d');
+      if (window.myChart) window.myChart.destroy();
+      window.myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Negative', 'Positive'],
+          datasets: [{
+            data: [neg, pos],
+            backgroundColor: ['#dc3545', '#28a745']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

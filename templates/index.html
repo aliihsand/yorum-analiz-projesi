@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yorum Analizi</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+
+    nav {
+      background-color: #ffd700;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: #1a1a1a;
+      text-decoration: none;
+      font-weight: 500;
+      margin-right: 2rem;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #1a237e;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 6rem auto 2rem;
+      padding: 0 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #1a1a1a;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .controls {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+
+    select, button {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-right: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    th {
+      background: #f5f5f5;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    td {
+      padding: 1rem;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .app-toggle {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-left: auto;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #e0e0e0;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    input:checked + .slider {
+      background-color: #1a237e;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .app-label {
+      font-size: 14px;
+      color: #1a1a1a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+
+    .app-label.active {
+      color: #1a237e;
+      transform: scale(1.2);
+    }
+
+    .positive {
+      color: #2e7d32;
+      font-weight: 500;
+    }
+
+    .negative {
+      color: #c62828;
+      font-weight: 500;
+    }
+
+    /* ThinkSuite Mode Styles */
+    body.thinksuite-mode nav {
+      background-color: #1a237e;
+    }
+
+    body.thinksuite-mode nav a {
+      color: white;
+    }
+
+    body.thinksuite-mode .app-label {
+      color: white;
+    }
+
+    body.thinksuite-mode .app-label.active {
+      color: white;
+      font-weight: 800;
+      transform: scale(1.2);
+    }
+
+    body.thinksuite-mode th {
+      background: #1a237e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Yorum Analiz</a>
+    <a href="/raporlar">Raporlar</a>
+    <a href="/oneriler">Müşteri Öneri/Şikayetleri</a>
+    <div class="app-toggle">
+      <span class="app-label active" id="biletinialLabel">BiletiniAL</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="appToggle" onchange="toggleApp()">
+        <span class="slider"></span>
+      </label>
+      <span class="app-label" id="thinksuiteLabel">ThinkSuite</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Play Store Yorum Analizi</h1>
+
+    <div class="controls">
+      <label for="monthSelect">Yorumları filtrele:</label>
+      <select id="monthSelect"></select>
+
+      <button onclick="getReviews()">Yorumları Getir</button>
+      <button id="downloadBtn" onclick="downloadExcel()" style="display:none;">Excel İndir</button>
+    </div>
+
+    <p id="statusMessage" style="text-align: center; font-style: italic; margin-top: 10px;"></p>
+
+    <table id="reviewTable" data-sort-dir="asc">
+      <thead>
+        <tr>
+          <th>Yorum</th>
+          <th>Puan</th>
+          <th onclick="sortTable(2)">Durum ⬍</th>
+          <th onclick="sortTable(3)">Tarih ⬍</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    let cachedData = [];
+    let currentApp = localStorage.getItem('currentApp') || 'biletinial';
+
+    function toggleApp() {
+      const toggle = document.getElementById('appToggle');
+      const biletinialLabel = document.getElementById('biletinialLabel');
+      const thinksuiteLabel = document.getElementById('thinksuiteLabel');
+      
+      currentApp = toggle.checked ? 'thinksuite' : 'biletinial';
+      localStorage.setItem('currentApp', currentApp);
+      
+      if (toggle.checked) {
+        biletinialLabel.classList.remove('active');
+        thinksuiteLabel.classList.add('active');
+        document.body.classList.add('thinksuite-mode');
+      } else {
+        biletinialLabel.classList.add('active');
+        thinksuiteLabel.classList.remove('active');
+        document.body.classList.remove('thinksuite-mode');
+      }
+    }
+
+    window.onload = function () {
+      const select = document.getElementById("monthSelect");
+      for (let i = 1; i <= 24; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `Son ${i} Ay`;
+        select.appendChild(option);
+      }
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "Tüm Yorumlar";
+      select.appendChild(allOption);
+
+      // Sayfa yüklendiğinde modu ayarla
+      const toggle = document.getElementById('appToggle');
+      if (currentApp === 'thinksuite') {
+        toggle.checked = true;
+        document.getElementById('biletinialLabel').classList.remove('active');
+        document.getElementById('thinksuiteLabel').classList.add('active');
+        document.body.classList.add('thinksuite-mode');
+      }
+    };
+
+    async function getReviews() {
+      const month = document.getElementById("monthSelect").value;
+      const status = document.getElementById("statusMessage");
+      const tableBody = document.querySelector("#reviewTable tbody");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      status.textContent = "Yorumlar yükleniyor, lütfen bekleyiniz...";
+      tableBody.innerHTML = "";
+      downloadBtn.style.display = "none";
+
+      try {
+        const response = await fetch(`/get_reviews?months=${month}&app=${currentApp}`);
+        const data = await response.json();
+        cachedData = data;
+
+        data.forEach((item) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${item.comment}</td>
+            <td>${item.rating}</td>
+            <td class="${item.sentiment === 'positive' ? 'positive' : 'negative'}">${item.sentiment}</td>
+            <td>${item.date}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        status.textContent = `Toplam ${data.length} yorum başarıyla yüklendi.`;
+        downloadBtn.style.display = "inline-block";
+      } catch (error) {
+        status.textContent = "Bir hata oluştu, yorumlar yüklenemedi.";
+        console.error(error);
+      }
+    }
+
+    function sortTable(columnIndex) {
+      const table = document.getElementById("reviewTable");
+      const rows = Array.from(table.rows).slice(1);
+
+      let asc = table.getAttribute("data-sort-dir") !== "asc";
+      table.setAttribute("data-sort-dir", asc ? "asc" : "desc");
+
+      rows.sort((a, b) => {
+        const cellA = a.cells[columnIndex].innerText;
+        const cellB = b.cells[columnIndex].innerText;
+        return asc
+          ? cellA.localeCompare(cellB)
+          : cellB.localeCompare(cellA);
+      });
+
+      rows.forEach(row => table.tBodies[0].appendChild(row));
+    }
+
+    function downloadExcel() {
+      if (cachedData.length === 0) {
+        alert("Lütfen önce yorumları yükleyin.");
+        return;
+      }
+
+      const wsData = [["Yorum", "Puan", "Durum", "Tarih"]];
+      cachedData.forEach(row => {
+        wsData.push([row.comment, row.rating, row.sentiment, row.date]);
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Yorumlar");
+
+      XLSX.writeFile(workbook, `${currentApp}_yorumlar.xlsx`);
+    }
+  </script>
+</body>
+</html>

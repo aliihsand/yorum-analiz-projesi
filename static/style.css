@@ -1,0 +1,138 @@
+/* ==== NAVIGATION ==== */
+nav {
+  background-color: #FFD800;
+  padding: 14px 0;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+nav a {
+  color: #000;
+  text-decoration: none;
+  margin: 0 25px;
+  font-size: 17px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+nav a:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+/* ==== BODY + CONTAINERS ==== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 40px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+select, input, button {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: #000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background-color: #333;
+}
+
+/* ==== TABLE ==== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+thead {
+  background-color: #FFD800;
+  color: #000;
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #ccc;
+  text-align: left;
+  vertical-align: top;
+}
+
+.positive {
+  color: green;
+  font-weight: bold;
+}
+
+.negative {
+  color: red;
+  font-weight: bold;
+}
+
+td:last-child,
+th:last-child {
+  min-width: 110px;
+}
+
+/* ==== RAPOR SAYFASI ==== */
+.rapor-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.box {
+  flex: 1;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+canvas {
+  margin: auto;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .rapor-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .controls {
+    flex-direction: column;
+  }
+}

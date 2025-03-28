@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Müşteri Öneri ve Şikayetleri</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+
+    nav {
+      background-color: #ffd700;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: #1a1a1a;
+      text-decoration: none;
+      font-weight: 500;
+      margin-right: 2rem;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #1a237e;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 6rem auto 2rem;
+      padding: 0 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #1a1a1a;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .controls {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+
+    select, button {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-right: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+    }
+
+    #downloadLink {
+      color: #1a237e;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    #downloadLink:hover {
+      color: #283593;
+    }
+
+    #summaryContent {
+      white-space: pre-wrap;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      font-family: 'Inter', monospace;
+      line-height: 1.6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .app-toggle {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-left: auto;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #e0e0e0;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    input:checked + .slider {
+      background-color: #1a237e;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .app-label {
+      font-size: 14px;
+      color: #1a1a1a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+
+    .app-label.active {
+      color: #1a237e;
+      transform: scale(1.2);
+    }
+
+    /* ThinkSuite Mode Styles */
+    body.thinksuite-mode nav {
+      background-color: #1a237e;
+    }
+
+    body.thinksuite-mode nav a {
+      color: white;
+    }
+
+    body.thinksuite-mode .app-label {
+      color: white;
+    }
+
+    body.thinksuite-mode .app-label.active {
+      color: white;
+      font-weight: 800;
+      transform: scale(1.2);
+    }
+
+    body.thinksuite-mode #downloadLink {
+      color: #1a1a1a;
+    }
+
+    body.thinksuite-mode #downloadLink:hover {
+      color: #333333;
+    }
+
+    body.thinksuite-mode #summaryContent {
+      background-color: white;
+      color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Yorum Analiz</a>
+    <a href="/raporlar">Raporlar</a>
+    <a href="/oneriler">Müşteri Öneri/Şikayetleri</a>
+    <div class="app-toggle">
+      <span class="app-label active" id="biletinialLabel">BiletiniAL</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="appToggle" onchange="toggleApp()">
+        <span class="slider"></span>
+      </label>
+      <span class="app-label" id="thinksuiteLabel">ThinkSuite</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Müşteri Öneri ve Şikayetleri</h1>
+
+    <div class="controls">
+      <label for="onerilerSelect">Filtrele:</label>
+      <select id="onerilerSelect">
+        <option value="1">Son 1 Ay</option>
+        <option value="2">Son 2 Ay</option>
+        <option value="3">Son 3 Ay</option>
+      </select>
+      <button onclick="getSummary()">Analiz Et</button>
+      <a id="downloadLink" href="#" style="display:none; margin-left: 10px;">Analiz Sonucunu İndir</a>
+    </div>
+
+    <pre id="summaryContent" style="white-space: pre-wrap; background-color: #f5f5f5; padding: 20px; border-radius: 10px; font-family: monospace;"></pre>
+  </div>
+
+  <script>
+    let currentApp = localStorage.getItem('currentApp') || 'biletinial';
+
+    function toggleApp() {
+      const toggle = document.getElementById('appToggle');
+      const biletinialLabel = document.getElementById('biletinialLabel');
+      const thinksuiteLabel = document.getElementById('thinksuiteLabel');
+      
+      currentApp = toggle.checked ? 'thinksuite' : 'biletinial';
+      localStorage.setItem('currentApp', currentApp);
+      
+      if (toggle.checked) {
+        biletinialLabel.classList.remove('active');
+        thinksuiteLabel.classList.add('active');
+        document.body.classList.add('thinksuite-mode');
+      } else {
+        biletinialLabel.classList.add('active');
+        thinksuiteLabel.classList.remove('active');
+        document.body.classList.remove('thinksuite-mode');
+      }
+    }
+
+    // Sayfa yüklendiğinde modu ayarla
+    window.onload = function() {
+      const toggle = document.getElementById('appToggle');
+      if (currentApp === 'thinksuite') {
+        toggle.checked = true;
+        document.getElementById('biletinialLabel').classList.remove('active');
+        document.getElementById('thinksuiteLabel').classList.add('active');
+        document.body.classList.add('thinksuite-mode');
+      }
+    };
+
+    async function getSummary() {
+      const month = document.getElementById("onerilerSelect").value;
+      const content = document.getElementById("summaryContent");
+      const link = document.getElementById("downloadLink");
+      content.textContent = "Analiz yapılıyor, lütfen bekleyin...";
+      link.style.display = "none";
+
+      try {
+        const res = await fetch(`/generate_summary?months=${month}&app=${currentApp}`);
+        const text = await res.text();
+        content.textContent = text;
+        link.href = `/download_txt?months=${month}&app=${currentApp}`;
+        link.style.display = "inline";
+      } catch {
+        content.textContent = "Bir hata oluştu. Lütfen tekrar deneyin.";
+      }
+    }
+  </script>
+</body>
+</html>
